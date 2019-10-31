@@ -3,7 +3,7 @@ import Axios from "axios";
 import LoadingOverlay from "react-loading-overlay";
 import BounceLoader from "react-spinners/BounceLoader";
 import { Api, apidata } from "../../Utils/constant";
-
+import Timeline from "../TImeline/Timeline";
 class DataRepresentation extends Component {
   constructor(props) {
     super(props);
@@ -29,18 +29,56 @@ class DataRepresentation extends Component {
         },
         crossdomain: true,
       });
-      this.setState({
-        data,
-        submit: true,
-      });
+      this.setState(
+        {
+          data,
+          submit: true,
+        },
+        () => {
+          this.convertData(this.state.data);
+        }
+      );
     } catch (error) {
       console.log("error");
       //   alert("Error is " + error + "So using saved Data ");
-      this.setState({
-        data: apidata,
-        submit: true,
-      });
+      this.setState(
+        {
+          data: apidata,
+          submit: true,
+        },
+        () => {
+          console.log("data ", this.state.data);
+          this.convertData(this.state.data);
+        }
+      );
     }
+  };
+  convertData = employeeData => {
+    var newEmployeeData = [
+      [
+        { type: "string", id: "employee" },
+        { type: "date", id: "start" },
+        { type: "date", id: "end" },
+      ],
+    ];
+    employeeData.forEach(data => {
+      var startingDate = data.start.split("/");
+      var endingDate = data.end.split("/");
+      var newData = [
+        data.name,
+        new Date(`${startingDate[1]}/${startingDate[0]}/${startingDate[2]}`),
+        new Date(`${endingDate[1]}/${endingDate[0]}/${endingDate[2]}`),
+      ];
+      newEmployeeData.push(newData);
+    });
+    this.setState(
+      {
+        employeeData: newEmployeeData,
+      },
+      () => {
+        console.log("Employee Data ", this.state.employeeData);
+      }
+    );
   };
   render() {
     const { data, submit } = this.state;
@@ -56,13 +94,13 @@ class DataRepresentation extends Component {
             }),
           }}
         >
-          <table class="table table-striped table-dark">
+          <table className="table table-striped table-dark">
             <thead>
               <tr>
                 <th scope="col">S. No.</th>
                 <th scope="col">First</th>
-                <th scope="col">Last</th>
-                <th scope="col">Handle</th>
+                <th scope="col">Start</th>
+                <th scope="col">End</th>
               </tr>
             </thead>
             <tbody>
@@ -77,6 +115,9 @@ class DataRepresentation extends Component {
                 ))}
             </tbody>
           </table>
+          <div className="chart">
+            <Timeline employeeData={this.state.employeeData} />
+          </div>
         </LoadingOverlay>
       </>
     );
