@@ -9,7 +9,7 @@ class DataRepresentation extends Component {
     super(props);
     this.state = {
       data: [],
-      submit: "",
+      submit: false,
     };
   }
   componentDidMount() {
@@ -31,7 +31,7 @@ class DataRepresentation extends Component {
       });
       this.setState(
         {
-          data,
+          data: data.data,
           submit: true,
         },
         () => {
@@ -39,7 +39,7 @@ class DataRepresentation extends Component {
         }
       );
     } catch (error) {
-      console.log("error");
+      // console.log("error");
       //   alert("Error is " + error + "So using saved Data ");
       this.setState(
         {
@@ -47,12 +47,14 @@ class DataRepresentation extends Component {
           submit: true,
         },
         () => {
-          console.log("data ", this.state.data);
+          // console.log("data ", this.state.data);
           this.convertData(this.state.data);
         }
       );
     }
   };
+
+  //Convert data into suitable format
   convertData = employeeData => {
     var newEmployeeData = [
       [
@@ -78,13 +80,17 @@ class DataRepresentation extends Component {
         employeeData: newEmployeeData,
       },
       () => {
-        console.log("Employee Data ", this.state.employeeData);
+        // console.log("Employee Data ", this.state.employeeData);
       }
     );
   };
+
+  //function to get days in a month
   getDaysInMonth = (month, year) => {
     return new Date(year, month, 0).getDate();
   };
+
+  //function to check for available days
   checkAvailability = () => {
     //building this for only current month otherwise i'm thinking for traversing and getting the list of month its including first then traverse and remove the date from the available month list dates and the date which are left will show them on chart as available date
     const availableMonth = [9]; // 9 for September
@@ -97,15 +103,15 @@ class DataRepresentation extends Component {
     this.state.employeeData.forEach(data => {
       var startingDate = new Date(data[2]).getDate();
       var endingDate = new Date(data[3]).getDate();
-      console.log("before removing", datesArray);
+      // console.log("before removing", datesArray);
       for (let j = startingDate; j <= endingDate; j++) {
         delete datesArray[datesArray.indexOf(j)];
       }
     });
-    console.log("after removing ", datesArray);
+    // console.log("after removing ", datesArray);
     datesArray.forEach(date => {
       if (date) {
-        console.log(date);
+        // console.log(date);
         let empData = [
           this.state.employeeData[1][0],
           "Avl",
@@ -119,10 +125,11 @@ class DataRepresentation extends Component {
         });
       }
     });
-    console.log("employeeData ", this.state.employeeData);
+    // console.log("employeeData ", this.state.employeeData);
   };
   render() {
     const { data, submit } = this.state;
+    // console.log("data ", data, "submit ", submit);
     return (
       <>
         <LoadingOverlay
@@ -135,38 +142,41 @@ class DataRepresentation extends Component {
             }),
           }}
         >
-          <table className="table table-striped table-dark">
-            <thead>
-              <tr>
-                <th scope="col">S. No.</th>
-                <th scope="col">First</th>
-                <th scope="col">Start</th>
-                <th scope="col">End</th>
-              </tr>
-            </thead>
-            <tbody>
-              {submit &&
-                data.map((row, index) => (
-                  <tr key={row.id}>
-                    <th scope="row">{index + 1}</th>
-                    <td>{row.name}</td>
-                    <td>{row.start}</td>
-                    <td>{row.end}</td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-          <div>
+          {submit && (
             <div>
-              <button
-                className="btn btn-primary"
-                onClick={this.checkAvailability}
-              >
-                Show Availability
-              </button>
+              <table className="table table-striped table-dark">
+                <thead>
+                  <tr>
+                    <th scope="col">S. No.</th>
+                    <th scope="col">First</th>
+                    <th scope="col">Start</th>
+                    <th scope="col">End</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.map((row, index) => (
+                    <tr key={row.id}>
+                      <th scope="row">{index + 1}</th>
+                      <td>{row.name}</td>
+                      <td>{row.start}</td>
+                      <td>{row.end}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div>
+                <div>
+                  <button
+                    className="btn btn-primary"
+                    onClick={this.checkAvailability}
+                  >
+                    Show Availability
+                  </button>
+                </div>
+                <Timeline employeeData={this.state.employeeData} />
+              </div>
             </div>
-            <Timeline employeeData={this.state.employeeData} />
-          </div>
+          )}
         </LoadingOverlay>
       </>
     );
